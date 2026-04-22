@@ -19,7 +19,7 @@
             WP
         </div>
         <div>
-            <p class="text-lg font-semibold tracking-tight text-white">WorkPulse</p>
+            <p class="text-lg font-semibold tracking-tight text-white">CastPulse</p>
             <p class="text-sm text-ink-400">Laravel Frontend</p>
         </div>
     </div>

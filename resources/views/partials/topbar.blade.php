@@ -11,7 +11,7 @@
         </button>
 
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">WorkPulse</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">CastPulse</p>
             <h1 class="mt-1 text-lg font-semibold tracking-tight text-white">Frontend Migration Workspace</h1>
         </div>
     </div>

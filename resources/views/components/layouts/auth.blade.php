@@ -11,7 +11,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ $title ?? 'WorkPulse Laravel' }}</title>
+        <title>{{ $title ?? 'CastPulse Laravel' }}</title>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
@@ -46,7 +46,7 @@
                         </div>
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">Weststar Engineering</p>
-                            <p class="mt-1 text-lg font-semibold tracking-tight text-white">WorkPulse Access</p>
+                            <p class="mt-1 text-lg font-semibold tracking-tight text-white">CastPulse Access</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
