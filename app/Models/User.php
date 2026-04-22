@@ -26,9 +26,10 @@ use Illuminate\Notifications\Notifiable;
     'phone',
     'profile_photo',
     'password',
+    'password_hash',
     'last_login_at',
 ])]
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'password_hash', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -44,8 +45,14 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'password_hash' => 'hashed',
             'last_login_at' => 'datetime',
         ];
+    }
+
+    public function getAuthPassword(): string
+    {
+        return (string) ($this->password_hash ?: $this->password);
     }
 
     public function getDisplayNameAttribute(): string

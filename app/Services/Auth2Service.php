@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class Auth2Service
@@ -42,6 +44,8 @@ class Auth2Service
 
     public function syncUser(array $authUser): User
     {
+        $this->ensureUserSchema();
+
         $authUserId = (int) ($authUser['id'] ?? 0);
         $email = filter_var(trim((string) ($authUser['email'] ?? '')), FILTER_VALIDATE_EMAIL);
         $firstName = trim((string) ($authUser['first_name'] ?? ''));
@@ -60,22 +64,31 @@ class Auth2Service
                 ->first();
         }
 
-        $attributes = [
+        $attributes = array_filter([
             'auth_user_id' => $authUserId,
-            'name' => trim($firstName.' '.$lastName),
-            'first_name' => $firstName,
-            'last_name' => $lastName !== '' ? $lastName : null,
+            'name' => $this->hasUserColumn('name') ? trim($firstName.' '.$lastName) : null,
+            'first_name' => $this->hasUserColumn('first_name') ? $firstName : null,
+            'last_name' => $this->hasUserColumn('last_name') ? ($lastName !== '' ? $lastName : null) : null,
             'email' => $email,
-            'status' => $status === 'active' ? 'active' : 'suspended',
-        ];
+            'status' => $this->hasUserColumn('status') ? ($status === 'active' ? 'active' : 'suspended') : null,
+        ], static fn ($value) => $value !== null);
 
         if ($user) {
             $user->fill($attributes);
         } else {
-            $user = new User($attributes + [
+            $createAttributes = $attributes + [
                 'role' => 'employee',
-                'password' => Str::random(40),
-            ]);
+            ];
+
+            if ($this->hasUserColumn('password')) {
+                $createAttributes['password'] = Str::random(40);
+            }
+
+            if ($this->hasUserColumn('password_hash')) {
+                $createAttributes['password_hash'] = password_hash(Str::random(40), PASSWORD_DEFAULT);
+            }
+
+            $user = new User($createAttributes);
         }
 
         $user->save();
@@ -128,5 +141,21 @@ class Auth2Service
         $decoded = json_decode($body, true);
 
         return is_array($decoded) ? $decoded : null;
+    }
+
+    private function ensureUserSchema(): void
+    {
+        if (! $this->hasUserColumn('auth_user_id')) {
+            DB::statement('ALTER TABLE users ADD COLUMN auth_user_id BIGINT UNSIGNED NULL');
+        }
+
+        if (! $this->hasUserColumn('last_login_at')) {
+            DB::statement('ALTER TABLE users ADD COLUMN last_login_at DATETIME NULL');
+        }
+    }
+
+    private function hasUserColumn(string $column): bool
+    {
+        return Schema::hasColumn('users', $column);
     }
 }
