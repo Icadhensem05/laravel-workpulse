@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Schema;
 
 #[Fillable([
     'auth_user_id',
@@ -34,6 +35,13 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $user): void {
+            $user->pruneMissingSchemaAttributes();
+        });
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -63,5 +71,36 @@ class User extends Authenticatable
         ])));
 
         return $full !== '' ? $full : (string) $this->name;
+    }
+
+    public function safeFill(array $attributes): static
+    {
+        $columns = $this->schemaColumns();
+        $filtered = array_intersect_key($attributes, array_flip($columns));
+        $this->fill($filtered);
+
+        return $this;
+    }
+
+    private function pruneMissingSchemaAttributes(): void
+    {
+        $columns = array_flip($this->schemaColumns());
+        foreach (array_keys($this->getAttributes()) as $key) {
+            if (! isset($columns[$key])) {
+                unset($this->{$key});
+            }
+        }
+    }
+
+    private function schemaColumns(): array
+    {
+        static $cache = [];
+        $table = $this->getTable();
+
+        if (! isset($cache[$table])) {
+            $cache[$table] = Schema::getColumnListing($table);
+        }
+
+        return $cache[$table];
     }
 }

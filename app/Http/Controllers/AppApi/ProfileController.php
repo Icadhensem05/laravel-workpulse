@@ -35,7 +35,7 @@ class ProfileController extends Controller
             'phone' => ['nullable', 'string', 'max:50'],
         ])->validate();
 
-        $user->fill([
+        $user->safeFill([
             'name' => trim($payload['first_name'].' '.($payload['last_name'] ?? '')),
             'first_name' => $payload['first_name'],
             'last_name' => $payload['last_name'] ?? null,
